@@ -1,15 +1,27 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>TAITAI RUN｜Tokyo → Clark｜試作v4.1｜2026-11-09 05:21</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>TAITAI RUN｜Tokyo → Clark</title>
+<meta name="description" content="Run with Taitai from Tokyo to Clark! Tap to jump, collect smiles, and fly to the Philippines.">
+<meta name="theme-color" content="#0C1959">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TAITAI RUN">
+<meta property="og:type" content="website">
+<meta property="og:title" content="TAITAI RUN｜Tokyo → Clark">
+<meta property="og:description" content="Run with Taitai from Tokyo to Clark! Tap to jump, collect smiles, and fly to the Philippines.">
+<meta property="og:url" content="https://game.taitai-support.com/">
+<meta property="og:image" content="https://game.taitai-support.com/chars/taitai.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" href="chars/taitai.png">
+<link rel="apple-touch-icon" href="chars/taitai.png">
+</head><body>
 <style>
   /* One fixed 360x640 game screen, scaled to fit. Single deliberate look (sky + navy), not theme-switched. */
   :root{--bg:#0C1959;--navy:#0C1959;--blue:#0061E8;--yel:#FFD54A;--sky:#bfe6ff;--ink:#9fb3e8;color-scheme:dark}
-  html,body{height:100%;margin:0;background:var(--bg);overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:none;font-family:"Arial Rounded MT Bold","Hiragino Maru Gothic ProN","Noto Sans JP",sans-serif}
-  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  html,body{height:100%;margin:0;background:var(--bg);overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:none;font-family:"Arial Rounded MT Bold","Hiragino Maru Gothic ProN","Noto Sans JP",sans-serif}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
   canvas{background:var(--sky);display:block;outline:none}
-  #v{position:fixed;left:calc(6px + env(safe-area-inset-left,0px));bottom:calc(4px + env(safe-area-inset-bottom,0px));color:var(--ink);font-size:10px;opacity:.8}
 </style>
 <div id="wrap"><canvas id="c" width="360" height="640" tabindex="0" aria-label="TAITAI RUN game. Tap or press space to jump."></canvas></div>
-<div id="v">TAITAI RUN v4.1 · 2026-11-09 05:21</div>
 <script>
 (function(){
 "use strict";
@@ -18,8 +30,14 @@ var cv=document.getElementById('c'),ctx=cv.getContext('2d');
 var NAVY='#0C1959',BLUE='#0061E8',YEL='#FFD54A';
 var DPR=Math.min(3,window.devicePixelRatio||1);
 cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
-function fit(){var vw=window.innerWidth,vh=window.innerHeight,s=Math.min(vw/W,vh/H);cv.style.width=(W*s)+'px';cv.style.height=(H*s)+'px';}
-window.addEventListener('resize',fit);fit();
+var VER='v4.2';
+var wrap=document.getElementById('wrap');
+function fit(){var cs=getComputedStyle(wrap),
+    vw=wrap.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),
+    vh=wrap.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom),
+    s=Math.max(0.1,Math.min(vw/W,vh/H));
+  cv.style.width=(W*s)+'px';cv.style.height=(H*s)+'px';}
+window.addEventListener('resize',fit);window.addEventListener('orientationchange',function(){setTimeout(fit,200);});fit();
 var REDUCE=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // ---- Taitai（キャラ正本・縮小のみ）----
@@ -44,6 +62,8 @@ function buzz(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
 
 // ---- sound（自作・WebAudio）----
 var AC=null,muted=false,bgmOn=false;
+try{muted=localStorage.getItem('taitairun_muted')==='1';}catch(e){}
+function toggleMute(){muted=!muted;try{localStorage.setItem('taitairun_muted',muted?'1':'0');}catch(e){}}
 function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null;}}if(AC&&AC.state==='suspended')AC.resume();return AC;}
 function tone(f,t,dur,type,vol){var a=ac();if(!a||muted)return;var o=a.createOscillator(),g=a.createGain();o.type=type||'square';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||0.08,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+dur+0.02);}
 function sfx(kind){var a=ac();if(!a)return;var t=a.currentTime;
@@ -68,7 +88,7 @@ function startBgm(){if(bgmOn||!ac())return;bgmOn=true;var step=0;setInterval(fun
 
 // ---- journey ----
 // TOKYO run → flight → CLARK run → (clear) → endless in Clark
-var LEN_TOKYO=7200,FLIGHT_SEC=24,LEN_CLARK=8400;
+var LEN_TOKYO=7200,FLIGHT_SEC=24,LEN_CLARK=8400,INTRO_SEC=2.8;
 
 // ---- missions（3 per run）----
 var MISSIONS=[
@@ -96,7 +116,7 @@ S=fresh();
 function pop(text,x,y,life,size,col){S.pops.push({text:text,x:x,y:y,life:life||1.2,max:life||1.2,size:size||22,col:col||'#fff'});}
 function burst(x,y,col,n){if(REDUCE)n=Math.ceil(n/3);for(var i=0;i<n;i++)S.parts.push({x:x,y:y,vx:(Math.random()-0.5)*5,vy:-Math.random()*5,life:0.6+Math.random()*0.4,col:col});}
 
-function startRun(){S=fresh();S.mode='intro';pop(pick(SAY.go),W/2,300,1.6,34);}
+function startRun(){S=fresh();S.mode='intro';pop(pick(SAY.go),W/2,445,1.8,30);}
 function enterScene(scene){S.scene=scene;S.sceneDist=0;S.obs=[];S.items=[];S.nextObs=420;S.nextSmile=250;S.nextPow=1500;S.nextHeart=3500;
   S.px=80;S.py=GROUND;S.vy=0;S.onG=true;S.jumps=0;S.spin=0;S.rot=0;}
 
@@ -124,20 +144,24 @@ function spawnSkySmiles(){var n=4+Math.floor(Math.random()*4),y0=130+Math.random
   S.nextSmile=S.flightT+1.4+Math.random()*0.8;}
 
 // ---- input ----
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){if(S.mode==='play'||S.mode==='flight')S.paused=true;try{if(AC)AC.suspend();}catch(e){}}});
 function tap(){ac();startBgm();
+  if(S.paused){S.paused=false;last=performance.now();return;}
   if(S.mode==='title'){startRun();return;}
   if(S.mode==='intro'||S.mode==='trans')return;
   if(S.mode==='clear'){if(S.t-S.endT<0.8)return;S.endless=true;S.mode='play';enterScene('clark');S.nextObs=300;pop('Endless! Tara!',W/2,260,1.4,30,YEL);return;}
-  if(S.mode==='over'){if(S.t-S.endT<0.9)return;rollMissions();S.mode='title';S.titleT=0;S.pops=[];return;}
+  if(S.mode==='over'){if(S.t-S.endT<0.9)return;rollMissions();startRun();return;}
   if(S.mode==='flight'){S.vy=-6.6;sfx('flap');if(Math.random()<0.18)pop(pick(SAY.fly),S.px+40,S.py-50,0.7,16);return;}
   if(S.onG){S.vy=-11.6;S.onG=false;S.jumps=1;S.spin=1;S.rot=0;sfx('jump');if(Math.random()<0.5)pop(pick(SAY.jump),S.px+40,S.py-120,0.8,18);}
   else if(S.jumps<2){S.vy=-9.8;S.jumps=2;S.spin=2;S.rot=0;S.dj++;sfx('jump2');pop(pick(SAY.jump2),S.px+40,S.py-130,0.9,20,YEL);}
 }
 cv.addEventListener('pointerdown',function(e){e.preventDefault();cv.focus();
   var r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*W/r.width,y=(e.clientY-r.top)*H/r.height;
-  if(x>W-44&&y<46){muted=!muted;return;}
+  if(x>W-44&&y<46){toggleMute();return;}
   tap();});
-window.addEventListener('keydown',function(e){if(e.code==='Space'||e.code==='ArrowUp'||e.code==='Enter'){e.preventDefault();tap();}else if(e.code==='KeyM'){muted=!muted;}});
+cv.addEventListener('contextmenu',function(e){e.preventDefault();});
+window.addEventListener('keydown',function(e){if(e.code==='Space'||e.code==='ArrowUp'||e.code==='Enter'){e.preventDefault();if(!e.repeat)tap();}else if(e.code==='KeyM'){toggleMute();}});
 
 function hitBox(a,b){return Math.abs(a.x-b.x)<(a.w+b.w)/2&&Math.abs(a.y-b.y)<(a.h+b.h)/2;}
 function hurt(){if(S.shield>0){pop('Safe!',S.px+30,S.py-120,0.8,22,'#7fe0ff');S.inv=0.6;return;}
@@ -151,13 +175,13 @@ function gainSmile(n,x,y,sky){
 function checkMissions(){MS.forEach(function(m){if(!m.done&&m.m.test(S)){m.done=true;S.smiles+=10;sfx('mission');pop('Mission clear! +10',W/2,220,1.6,22,'#9dffb0');}});}
 
 // ---- update ----
-function update(dt){S.t+=dt;
+function update(dt){if(S.paused)return;S.t+=dt;
   for(var q=S.pops.length-1;q>=0;q--){S.pops[q].life-=dt;if(S.pops[q].life<=0)S.pops.splice(q,1);}
   for(var pI=S.parts.length-1;pI>=0;pI--){var p=S.parts[pI];p.x+=p.vx*dt*60;p.y+=p.vy*dt*60;p.vy+=0.2;p.life-=dt;if(p.life<=0)S.parts.splice(pI,1);}
   if(S.mode==='title'){S.titleT+=dt;return;}
-  if(S.mode==='intro'){S.introT+=dt;if(S.introT>2.0){S.mode='play';enterScene('tokyo');pop('Tokyo!',W/2,250,1.2,30);}return;}
+  if(S.mode==='intro'){S.introT+=dt;if(S.introT>INTRO_SEC){S.mode='play';enterScene('tokyo');pop('Tokyo!',W/2,250,1.2,30);}return;}
   if(S.mode==='trans'){S.transT+=dt;S.gx=(S.gx+3)%80;
-    if(S.transT>2.0){if(S.scene==='tokyo'){S.mode='flight';S.scene='sky';S.flightT=0;S.obs=[];S.items=[];S.px=90;S.py=280;S.vy=0;S.nextObs=1.0;S.nextSmile=0.4;}
+    if(S.transT>2.0){if(S.scene==='tokyo'){S.mode='flight';S.scene='sky';S.flightT=0;S.obs=[];S.items=[];S.px=90;S.py=260;S.vy=-4;S.inv=Math.max(S.inv,1.5);S.nextObs=1.6;S.nextSmile=0.4;}
       else{S.mode='play';enterScene('clark');S.reached=false;pop('Kumusta, Clark!',W/2,250,1.4,30,YEL);}}
     return;}
   if(S.comboT>0){S.comboT-=dt;if(S.comboT<=0)S.combo=0;}
@@ -319,8 +343,9 @@ function drawTitle(){S.scene='tokyo';bgTokyo();var t=S.titleT;var sc=REDUCE?1:(t
   if(BEST>0)txt('Best 😊 '+BEST,W/2,382,16,'#fff',BLUE);
   if(t>1.0&&Math.floor(S.t*2)%2===0)txt('Tap to start',W/2,414,20,'#fff',BLUE);
   var bob=Math.sin(S.t*3)*5;drawTaitai(W/2,GROUND+bob,1.0,0);
-  ctx.font='11px sans-serif';ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText('TAITAI Support Co., Ltd.',W/2,H-16);}
-function drawIntro(){bgTokyo();var k=S.introT/2.0;var x=-80+k*(W+160),y=220-Math.sin(k*Math.PI)*40;plane(x,y,1.3);drawTaitai(x-2,y+12,0.42,0);txt('🇯🇵 Tokyo',W/2,120,24,'#fff');}
+  ctx.font='11px sans-serif';ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('TAITAI Support Co., Ltd.',W/2,H-18);
+  ctx.font='9px sans-serif';ctx.fillStyle='rgba(255,255,255,.6)';ctx.textAlign='right';ctx.fillText(VER,W-8,H-8);}
+function drawIntro(){bgTokyo();var k=S.introT/INTRO_SEC;var x=-80+k*(W+160),y=220-Math.sin(k*Math.PI)*40;plane(x,y,1.3);drawTaitai(x-2,y+12,0.42,0);txt('🇯🇵 Tokyo',W/2,120,24,'#fff');missionList(300,false);}
 function drawTrans(){var k=Math.min(1,S.transT/2.0);
   if(S.scene==='tokyo'){bgTokyo();var x=S.px+k*(W),y=GROUND-60-k*300;plane(x,y,1.3);drawTaitai(x-2,y+12,0.42,0);txt('Fly to Clark!',W/2,200,34,YEL);txt('Tap to fly up',W/2,250,18,'#fff',BLUE);}
   else{S.scene='clark';bgClark();var x2=-60+k*(W/2+60),y2=120+k*300;if(k<1){plane(x2,y2,1.3);drawTaitai(x2-2,y2+12,0.42,0);}else drawTaitai(80,GROUND,1,0);txt('Welcome to Clark!',W/2,200,30,YEL);S.scene='sky';}
@@ -331,13 +356,23 @@ function drawPlay(){drawBG();ctx.save();if(S.shake>0&&!REDUCE){S.shake-=0.016;ct
   if(S.mode==='flight'){if(!blink){var tilt=Math.max(-0.35,Math.min(0.35,S.vy*0.05));ctx.save();ctx.translate(S.px,S.py);ctx.rotate(tilt);plane(0,0,1.15);drawTaitai(-2,10,0.38,0);ctx.restore();}if(S.shield>0)drawShield(S.px,S.py,44);}
   else{var bob=S.onG?Math.abs(Math.sin(S.t*12))*4:0;if(!blink)drawTaitai(S.px,S.py-bob,1,S.spin?S.rot:0);if(S.shield>0)drawShield(S.px,S.py-50,56);
     if(S.magnet>0){ctx.save();ctx.globalAlpha=0.18;ctx.strokeStyle='#ffb030';ctx.lineWidth=2;ctx.beginPath();ctx.arc(S.px,S.py-45,70+Math.sin(S.t*8)*6,0,7);ctx.stroke();ctx.restore();}}
-  drawParts();ctx.restore();drawHUD();}
+  drawParts();ctx.restore();drawHUD();drawHint();if(S.paused)drawPaused();}
+function drawHint(){var a=0;
+  if(S.mode==='play'&&S.scene==='tokyo'&&!S.endless&&S.sceneDist<900)a=Math.min(1,(900-S.sceneDist)/250);
+  else if(S.mode==='flight'&&S.flightT<3.2)a=Math.min(1,(3.2-S.flightT)/0.8);
+  if(a<=0)return;ctx.save();ctx.globalAlpha=a;ctx.fillStyle='rgba(12,25,89,.78)';ctx.beginPath();
+  var hy=S.mode==='flight'?92:318,hh=S.mode==='flight'?40:70;
+  if(ctx.roundRect)ctx.roundRect(40,hy,W-80,hh,14);else ctx.rect(40,hy,W-80,hh);ctx.fill();
+  if(S.mode==='flight'){txt('👆 Tap = fly up',W/2,hy+20,18,'#fff');}
+  else{txt('👆 Tap = Jump',W/2,340,18,'#fff');txt('Tap again in the air = Double jump',W/2,366,13,YEL);}
+  ctx.restore();}
+function drawPaused(){ctx.fillStyle='rgba(12,25,89,.72)';ctx.fillRect(0,0,W,H);txt('Paused',W/2,280,40,'#fff');txt('Tap to continue',W/2,330,20,YEL);}
 function drawEnd(){S.scene=S.mode==='clear'||S.endless||S.reached?'clark':S.scene;drawBG();var bob=Math.sin(S.t*3)*5;drawTaitai(W/2,GROUND+bob,1.1,0);
   if(S.mode==='clear'){txt('Kumusta, Clark!',W/2,120,36,YEL);txt('😊 '+S.smiles+' smiles',W/2,170,26,'#fff');if(S.newBest)txt('New best!',W/2,204,20,'#9dffb0');
-    missionList(240,true);if(Math.floor(S.t*2)%2===0)txt('Tap: keep running (Endless)',W/2,360,17,'#fff',BLUE);txt('Salamat!',W/2,394,16,'#fff');}
+    missionList(240,true);if(Math.floor(S.t*2)%2===0)txt('Tap to keep running (Endless)',W/2,344,17,'#fff',BLUE);txt('Salamat!',W/2,372,15,'#fff');}
   else{txt('Ay naku!',W/2,120,44,'#ff6b8a');txt('😊 '+S.smiles+' smiles',W/2,172,26,'#fff');
     txt(S.newBest?'New best!':'Best 😊 '+BEST,W/2,206,18,S.newBest?'#9dffb0':'#fff');if(S.endless)txt(Math.floor(S.sceneDist/10)+' m in Clark',W/2,230,15,'#fff');
-    missionList(262,true);if(Math.floor(S.t*2)%2===0)txt('Tap to try again',W/2,384,18,'#fff',BLUE);}
+    missionList(262,true);if(Math.floor(S.t*2)%2===0)txt('Tap to try again',W/2,370,18,'#fff',BLUE);}
   drawHUD();}
 
 var last=performance.now();
