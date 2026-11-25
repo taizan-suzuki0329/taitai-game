@@ -31,7 +31,7 @@ var NAVY='#0C1959',BLUE='#0061E8',YEL='#FFD54A';
 var DPR=Math.min(2,window.devicePixelRatio||1),LOW=false;
 function setDPR(d){DPR=d;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
 setDPR(DPR);
-var VER='v4.6';
+var VER='v4.7';
 var wrap=document.getElementById('wrap');
 function fit(){var cs=getComputedStyle(wrap),
     vw=wrap.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),
@@ -169,7 +169,7 @@ function tap(){ac();startBgm();
 }
 cv.addEventListener('pointerdown',function(e){e.preventDefault();cv.focus();
   var r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*W/r.width,y=(e.clientY-r.top)*H/r.height;
-  if(x>W-52&&y<58){toggleMute();return;}
+  if(x>W-66&&y<66){toggleMute();return;}
   if(S.mode==='title'&&y>430&&y<600){if(x<115){setHero(HERO-1);return;}if(x>W-115){setHero(HERO+1);return;}}
   tap();});
 cv.addEventListener('contextmenu',function(e){e.preventDefault();});
@@ -281,8 +281,8 @@ function kubo(x,y,s){ctx.fillStyle='#c9a46a';ctx.fillRect(x-22*s,y-34*s,44*s,26*
 var SKYC={};function sky(top,mid,bot){var k=top+mid+bot,g=SKYC[k];if(!g){g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,top);g.addColorStop(0.6,mid);g.addColorStop(1,bot);SKYC[k]=g;}ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
 
 function bgTokyo(){sky('#9ccaf5','#e6f1ff','#cfe3f7');var d=S.dist;
-  sun(312,118,24);
   for(var i=0;i<4;i++){var x=((i*180-d*0.2)%720+720)%720-60;cloud(x,100+(i%2)*55,0.85);}
+  sun(312,118,24);
   if(S.planeOn)plane(S.planeX,150+Math.sin(S.t*2)*4,0.8);
   // far skyline
   var far=d*0.25;ctx.fillStyle='#b8c7e0';
@@ -298,8 +298,8 @@ function bgTokyo(){sky('#9ccaf5','#e6f1ff','#cfe3f7');var d=S.dist;
   ctx.fillStyle='#5b6478';ctx.fillRect(0,GROUND,W,H-GROUND);ctx.fillStyle='#fff';for(var j=0;j<6;j++)ctx.fillRect(((j*80-S.gx)%480+480)%480-40,GROUND+40,40,5);
   ctx.fillStyle='#8a93a8';ctx.fillRect(0,GROUND,W,8);}
 function bgClark(){sky('#8fd3ff','#dff4ff','#bfe6ff');var d=S.dist;
-  sun(312,118,26);
   for(var i=0;i<4;i++){var x=((i*180-d*0.25)%720+720)%720-60;cloud(x,110+(i%2)*60,0.9);}
+  sun(312,118,26);
   if(S.planeOn)plane(S.planeX,150+Math.sin(S.t*2)*4,0.9);
   // Mt. Arayat on the horizon
   var mx=((420-d*0.08)%1200+1200)%1200-300;ctx.fillStyle='#8fb6c9';ctx.beginPath();ctx.moveTo(mx-170,GROUND-30);ctx.quadraticCurveTo(mx-40,GROUND-200,mx,GROUND-205);ctx.quadraticCurveTo(mx+50,GROUND-200,mx+170,GROUND-30);ctx.closePath();ctx.fill();
@@ -309,8 +309,8 @@ function bgClark(){sky('#8fd3ff','#dff4ff','#bfe6ff');var d=S.dist;
   if(S.mode==='play'||S.mode==='trans')banderitas(GROUND-170,d*0.7);
   ctx.fillStyle='#6cc46a';ctx.fillRect(0,GROUND,W,H-GROUND);ctx.fillStyle='#5db25b';for(var j=0;j<6;j++)ctx.fillRect(((j*80-S.gx)%480+480)%480-40,GROUND+8,36,4);}
 function bgSky(){sky('#5fb4ff','#a9dcff','#e8f7ff');var d=S.dist;
+    for(var i=0;i<6;i++){var x=((i*120-d*0.4)%720+720)%720-60;cloud(x,60+(i%3)*30,0.6,'rgba(255,255,255,.8)');}
   sun(300,96,22);
-  for(var i=0;i<6;i++){var x=((i*120-d*0.4)%720+720)%720-60;cloud(x,60+(i%3)*30,0.6,'rgba(255,255,255,.8)');}
   // sea far below
   ctx.fillStyle='#3aa0d8';ctx.fillRect(0,GROUND-10,W,H-GROUND+10);ctx.fillStyle='rgba(255,255,255,.5)';
   for(var j=0;j<8;j++){var wx=((j*60-S.gx*1.5)%480+480)%480-30;ctx.fillRect(wx,GROUND+10+(j%3)*20,24,3);}
@@ -386,8 +386,8 @@ function drawTitle(){S.scene='tokyo';bgTokyo();var t=S.titleT;var sc=REDUCE?1:(t
   if(BEST>0)txt('Best 😊 '+BEST,W/2,378,15,'#fff',BLUE);
   if(t>1.0){ctx.save();ctx.globalAlpha=0.65+0.35*Math.sin(S.t*4);txt('Tap to start',W/2,404,22,'#fff',BLUE);ctx.restore();}
   var bob=Math.sin(S.t*3)*5;drawTaitai(W/2,GROUND+bob,0.84,0);
-  ctx.fillStyle='rgba(12,25,89,.75)';ctx.beginPath();ctx.arc(W-23,26,19,0,7);ctx.fill();ctx.font='20px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.fillText(muted?'🔇':'🔊',W-23,27);
-  ctx.font='bold 10px sans-serif';ctx.fillText(muted?'Sound off':'Sound on',W-23,54);
+  ctx.fillStyle='rgba(12,25,89,.75)';ctx.beginPath();ctx.arc(W-36,26,19,0,7);ctx.fill();ctx.font='20px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';ctx.fillText(muted?'🔇':'🔊',W-36,27);
+  txt(muted?'Sound off':'Sound on',W-36,56,11,'#fff');
   arrowBtn(60,478,-1);arrowBtn(W-60,478,1);txt(heroName(),W/2,548,22,YEL);txt('◀  Choose your runner  ▶',W/2,576,14,'#fff');
   ctx.font='11px sans-serif';ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('TAITAI Support Co., Ltd.',W/2,H-18);
   ctx.font='9px sans-serif';ctx.fillStyle='rgba(255,255,255,.6)';ctx.textAlign='right';ctx.fillText(VER,W-8,H-8);}
